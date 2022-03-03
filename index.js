@@ -3,7 +3,7 @@ const express = require('express')
 const app = express()
 const PORT = process.env.PORT || 80
 const cors = require('cors')
-const users = require('./routes/users')
+const users = require('./routes/Users')
 const notFound = require('./middleware/errors/notFound')
 
 app.use(cors())
