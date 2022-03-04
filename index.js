@@ -1,4 +1,5 @@
 require('dotenv').config()
+require('./settings/mongo')
 const express = require('express')
 const app = express()
 const PORT = process.env.PORT || 80
