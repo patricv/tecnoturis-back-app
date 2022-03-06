@@ -2,7 +2,8 @@ const tecnoturistRouter = require('express').Router()
 const authorization = require('../middleware/authorization')
 const axios = require('axios')
 const baseUrl = 'https://dev.tecnoturis.es/api-rest/hotels/api/v1/'
-const baseUrlDetails = 'https://dev.tecnoturis.es/'
+const { getToken } = require('../settings/tecnoturistClient')
+const { getTokenFromTecnoturist } = require('../functions/GetToken')
 
 tecnoturistRouter.get('/token', authorization, async (request, response, next) => {
   try {
@@ -24,13 +25,21 @@ tecnoturistRouter.get('/token', authorization, async (request, response, next) =
 
 tecnoturistRouter.get('/hotels', authorization, async (request, response, next) => {
   try {
+    const { name, rating } = request.params
+    let token = getToken()
+    if (!token) {
+      token = await getTokenFromTecnoturist()
+    }
     const headers = {
       'Content-Type': 'application/json',
       'Access-Control-Allow-Origin': '*',
-      Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIiLCJpYXQiOjE2NDY1NjEzMDIsImV4cCI6MTY0NjY0NzcwMn0.7YD6XXzXCdkeSbtIWp10H-_leFzxCXddWUySuR7Q0hw'
+      Authorization: `Bearer ${token}`
 
     }
-    const { data } = await axios.get(baseUrl + 'hotels', { headers: headers })
+    const { data } = await axios.get(baseUrl + 'hotels', {
+      headers: headers,
+      params: { name: name, hotelRating: rating }
+    })
     const hotels = data._data
     return response.send({ hotels })
   } catch (error) {
@@ -43,11 +52,15 @@ tecnoturistRouter.get('/hotel/:id', authorization, async (request, response, nex
   if (!id) {
     return response.status(400).json({ error: 'Bad request' })
   }
+  let token = getToken()
+  if (!token) {
+    token = await getTokenFromTecnoturist()
+  }
   try {
     const headers = {
-      'Content-Type': 'text/html',
+      'Content-Type': 'application/json',
       'Access-Control-Allow-Origin': '*',
-      Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIiLCJpYXQiOjE2NDY1NjEzMDIsImV4cCI6MTY0NjY0NzcwMn0.7YD6XXzXCdkeSbtIWp10H-_leFzxCXddWUySuR7Q0hw'
+      Authorization: `Bearer ${token}`
 
     }
     const { data } = await axios.get(baseUrl + 'hotels/' + id, { headers: headers })
